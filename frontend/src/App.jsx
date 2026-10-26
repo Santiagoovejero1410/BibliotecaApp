@@ -1,46 +1,33 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Layout from "./components/Layout.jsx";
+import Navbar from "./components/Navbar.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
-import AgendaPage from "./pages/AgendaPage.jsx";
-import TurnosPage from "./pages/TurnosPage.jsx";
-import NuevoTurnoPage from "./pages/NuevoTurnoPage.jsx";
-import ServiciosAdminPage from "./pages/ServiciosAdminPage.jsx";
+import LibrosPage from "./pages/LibrosPage.jsx";
+import LibroFormPage from "./pages/LibroFormPage.jsx";
+import PrestamosPage from "./pages/PrestamosPage.jsx";
 
-// Define TODAS las rutas de la aplicación (React Router).
+// Define todas las rutas de la aplicación (React Router).
 export default function App() {
   return (
-    <Routes>
-      {/* Rutas públicas */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+    <>
+      <Navbar />
+      <Routes>
+        {/* Rutas públicas */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
-      {/* Rutas privadas: ProtectedRoute exige estar logueado; Layout agrega el menú de arriba */}
-      <Route
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="/" element={<AgendaPage />} />
-        <Route path="/turnos" element={<TurnosPage />} />
-        <Route path="/turnos/nuevo" element={<NuevoTurnoPage />} />
+        {/* Rutas privadas: hay que estar logueado */}
+        <Route path="/" element={<ProtectedRoute><LibrosPage /></ProtectedRoute>} />
+        <Route path="/prestamos" element={<ProtectedRoute><PrestamosPage /></ProtectedRoute>} />
 
-        {/* Ruta solo para Admin: si entra un Cliente lo manda a "/" */}
-        <Route
-          path="/admin/servicios"
-          element={
-            <ProtectedRoute roles={["Admin"]}>
-              <ServiciosAdminPage />
-            </ProtectedRoute>
-          }
-        />
-      </Route>
+        {/* Rutas solo para Admin: si entra un Socio, lo manda al inicio */}
+        <Route path="/libros/nuevo" element={<ProtectedRoute roles={["Admin"]}><LibroFormPage /></ProtectedRoute>} />
+        <Route path="/libros/:id/editar" element={<ProtectedRoute roles={["Admin"]}><LibroFormPage /></ProtectedRoute>} />
 
-      {/* Cualquier otra URL -> inicio */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Cualquier otra URL -> inicio */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }

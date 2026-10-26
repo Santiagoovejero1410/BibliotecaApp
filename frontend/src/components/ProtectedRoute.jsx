@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
-// Protege rutas. Si no hay usuario -> /login. Si la ruta pide roles y el usuario no lo tiene -> inicio.
+// Protege rutas. Sin usuario -> /login. Si la ruta pide un rol y el usuario no lo tiene -> inicio.
 // Uso: <ProtectedRoute roles={["Admin"]}> ... </ProtectedRoute>
 export default function ProtectedRoute({ children, roles }) {
   const { user } = useAuth();

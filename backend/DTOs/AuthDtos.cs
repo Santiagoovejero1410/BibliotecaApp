@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TurnosApi.DTOs;
+namespace BibliotecaApi.DTOs;
 
-// DTO = objeto que viaja entre el front y el back. NO exponemos las entidades directamente
-// (así el PasswordHash nunca sale de la API). Los atributos validan los datos automáticamente.
+// DTO = objeto que viaja entre el front y el back. Los atributos [Required], [EmailAddress], etc.
+// validan los datos automáticamente (por el [ApiController] de los controllers).
 public class RegisterDto
 {
     [Required(ErrorMessage = "El nombre es obligatorio")]
@@ -12,7 +12,6 @@ public class RegisterDto
 
     [Required(ErrorMessage = "El email es obligatorio")]
     [EmailAddress(ErrorMessage = "El email no es válido")]
-    [StringLength(150)]
     public string Email { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "La contraseña es obligatoria")]
@@ -30,11 +29,11 @@ public class LoginDto
     public string Password { get; set; } = string.Empty;
 }
 
-// Respuesta de login/registro: el token JWT + datos básicos del usuario para mostrar en el front
+// Lo que devuelve el login: el token JWT y datos del usuario
 public class AuthResponseDto
 {
     public string Token { get; set; } = string.Empty;
-    public int Id { get; set; }
+    public string Id { get; set; } = string.Empty;
     public string Nombre { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Rol { get; set; } = string.Empty;

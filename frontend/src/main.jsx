@@ -7,7 +7,7 @@ import "./index.css";
 
 // Punto de entrada de la app.
 // - BrowserRouter: habilita las rutas (URLs) en toda la app.
-// - AuthProvider: comparte el usuario logueado con TODOS los componentes (estado global con Context).
+// - AuthProvider: comparte el usuario logueado con todos los componentes (Context API).
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>

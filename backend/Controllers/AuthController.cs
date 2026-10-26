@@ -1,28 +1,41 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TurnosApi.DTOs;
-using TurnosApi.Services;
+using BibliotecaApi.DTOs;
+using BibliotecaApi.Services;
 
-namespace TurnosApi.Controllers;
+namespace BibliotecaApi.Controllers;
 
-// CONTROLLER: solo recibe el request HTTP y delega en el Service. NO tiene lógica de negocio.
-// [ApiController] activa la validación automática de los DTO (devuelve 400 si no cumplen los atributos).
+// CONTROLLER: recibe el pedido HTTP y se lo pasa al Service. No tiene reglas de negocio.
+// [ApiController] valida los DTO automáticamente (si no cumplen, responde 400 solo).
+// Este controller NO tiene [Authorize]: registrarse y loguearse tiene que ser público.
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _auth;
-    public AuthController(IAuthService auth) => _auth = auth;   // DI por constructor (interfaz, no clase)
+    public AuthController(IAuthService auth) => _auth = auth;      // DI por constructor (interfaz)
 
-    // POST api/auth/register  -> público (no hace falta token)
+    // POST api/auth/register
     [HttpPost("register")]
-    [AllowAnonymous]
-    public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto) =>
-        Ok(await _auth.RegisterAsync(dto));
+    public async Task<IActionResult> Register(RegisterDto dto)
+    {
+        try
+        {
+            return Ok(await _auth.RegisterAsync(dto));
+        }
+        catch (InvalidOperationException ex)                       // ej: el email ya existe
+        {
+            return BadRequest(new { mensaje = ex.Message });       // 400
+        }
+    }
 
-    // POST api/auth/login  -> público, devuelve el JWT
+    // POST api/auth/login -> devuelve el JWT
     [HttpPost("login")]
-    [AllowAnonymous]
-    public async Task<ActionResult<AuthResponseDto>> Login(LoginDto dto) =>
-        Ok(await _auth.LoginAsync(dto));
+    public async Task<IActionResult> Login(LoginDto dto)
+    {
+        var respuesta = await _auth.LoginAsync(dto);
+        if (respuesta == null)
+            return Unauthorized(new { mensaje = "Email o contraseña incorrectos." });   // 401
+
+        return Ok(respuesta);                                      // 200
+    }
 }

@@ -1,36 +1,50 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using TurnosApi.Data;
-using TurnosApi.Middleware;
-using TurnosApi.Repositories;
-using TurnosApi.Services;
+using BibliotecaApi.Data;
+using BibliotecaApi.Models;
+using BibliotecaApi.Repositories;
+using BibliotecaApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ============ 1) BASE DE DATOS (EF Core + SQL Server) ============
+// ===== 1) Base de datos: EF Core con SQL Server =====
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ============ 2) INYECCIÓN DE DEPENDENCIAS ============
-// AddScoped = se crea una instancia nueva por cada request HTTP.
-// Registramos "interfaz -> clase concreta": cuando alguien pida IAuthService, ASP.NET entrega AuthService.
-builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
-builder.Services.AddScoped<IServicioRepository, ServicioRepository>();
-builder.Services.AddScoped<ITurnoRepository, TurnoRepository>();
+// ===== 2) ASP.NET Identity: usuarios, contraseñas hasheadas y roles =====
+builder.Services
+    .AddIdentityCore<ApplicationUser>(options =>
+    {
+        options.Password.RequiredLength = 6;              // reglas de contraseña más simples
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.User.RequireUniqueEmail = true;           // no puede haber dos usuarios con el mismo email
+    })
+    .AddRoles<IdentityRole>()                             // habilita los roles (Admin, Socio)
+    .AddEntityFrameworkStores<AppDbContext>();            // Identity guarda todo con nuestro DbContext
+
+// ===== 3) Inyección de dependencias =====
+// AddScoped: se crea una instancia nueva por cada pedido HTTP.
+// "Cuando alguien pida la interfaz, entregale esta clase."
+builder.Services.AddScoped<ILibroRepository, LibroRepository>();
+builder.Services.AddScoped<IPrestamoRepository, PrestamoRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IServicioService, ServicioService>();
-builder.Services.AddScoped<ITurnoService, TurnoService>();
+builder.Services.AddScoped<ILibroService, LibroService>();
+builder.Services.AddScoped<IPrestamoService, PrestamoService>();
 
 builder.Services.AddControllers();
 
-// ============ 3) SWAGGER (documentación) con botón "Authorize" para pegar el JWT ============
+// ===== 4) Swagger (documentación) con botón "Authorize" para pegar el token =====
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Turnos API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Biblioteca API", Version = "v1" });
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -39,7 +53,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Pegá acá el token JWT que devuelve /api/auth/login"
+        Description = "Pegá acá el token que devuelve /api/auth/login"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -54,8 +68,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// ============ 4) AUTENTICACIÓN JWT ============
-// Le dice a ASP.NET cómo VALIDAR el token que llega en el header "Authorization: Bearer xxx"
+// ===== 5) Autenticación con JWT: cómo validar el token que llega en "Authorization: Bearer ..." =====
 var jwt = builder.Configuration.GetSection("Jwt");
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -65,20 +78,17 @@ builder.Services
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateLifetime = true,                 // Rechaza tokens vencidos
-            ValidateIssuerSigningKey = true,         // Verifica la firma con la clave secreta
+            ValidateLifetime = true,                      // rechaza tokens vencidos
+            ValidateIssuerSigningKey = true,              // verifica la firma con la clave secreta
             ValidIssuer = jwt["Issuer"],
             ValidAudience = jwt["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!)),
-            ClockSkew = TimeSpan.Zero
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!))
         };
     });
 
 builder.Services.AddAuthorization();
 
-// ============ 5) CORS ============
-// El navegador bloquea pedidos entre orígenes distintos (front :5173 -> back :5080).
-// Con esta política le decimos al back que acepte pedidos del front.
+// ===== 6) CORS: permite que el front (puerto 5173) llame a esta API (puerto 5080) =====
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
@@ -89,21 +99,18 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Aplica las migraciones pendientes al arrancar y carga datos de ejemplo
+// Al arrancar: migraciones + roles + datos de ejemplo
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-    DbSeeder.Seed(db);
+    await DbInicial.CrearAsync(scope.ServiceProvider);
 }
 
-// ============ PIPELINE (el ORDEN importa) ============
-app.UseMiddleware<ExceptionHandlingMiddleware>();   // 1º: atrapa cualquier error
+// ===== Pipeline (el ORDEN importa) =====
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseCors("Frontend");                            // CORS antes de autenticación
-app.UseAuthentication();                            // ¿Quién sos? (lee el token)
-app.UseAuthorization();                             // ¿Tenés permiso? ([Authorize], roles)
+app.UseCors("Frontend");
+app.UseAuthentication();      // ¿quién sos? (lee el token)
+app.UseAuthorization();       // ¿tenés permiso? ([Authorize] y roles)
 app.MapControllers();
 
 app.Run();
