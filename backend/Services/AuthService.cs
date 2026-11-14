@@ -75,12 +75,12 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.Email, user.Email!),
             new Claim(ClaimTypes.Role, rol)                   // lo usa [Authorize(Roles = "Admin")]
         };
-
+        var horas = int.Parse(_config["Jwt:ExpireHours"] ?? "8");
         var token = new JwtSecurityToken(
             issuer: _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(8),             // el token vence a las 8 horas
+            expires: DateTime.UtcNow.AddHours(horas),             // el token vence a las 8 horas
             signingCredentials: credenciales);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
