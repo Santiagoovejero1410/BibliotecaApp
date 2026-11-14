@@ -1,17 +1,20 @@
+
 namespace BibliotecaApi.Models;
 
-// ENTIDAD -> tabla "Prestamos". Une un Libro con un Usuario.
+// Entidad que representa un préstamo de un libro a un usuario.
 public class Prestamo
 {
     public int Id { get; set; }
-    public DateTime FechaPrestamo { get; set; }
-    public DateTime? FechaDevolucion { get; set; }    // null = todavía no lo devolvió
 
-    // Clave foránea hacia Libro + propiedad de navegación
+    public DateTime FechaPrestamo { get; set; }
+
+    public DateTime? FechaDevolucion { get; set; }
+
+    // Relación con Libro.
     public int LibroId { get; set; }
     public Libro Libro { get; set; } = null!;
 
-    // Clave foránea hacia el usuario (el Id de Identity es string)
+    // Relación con el nuevo modelo Usuario.
     public string UsuarioId { get; set; } = string.Empty;
-    public ApplicationUser Usuario { get; set; } = null!;
+    public Usuario Usuario { get; set; } = null!;
 }

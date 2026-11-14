@@ -1,11 +1,10 @@
+
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using BibliotecaApi.Data;
-using BibliotecaApi.Models;
 using BibliotecaApi.Repositories;
 using BibliotecaApi.Services;
 
@@ -15,23 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ===== 2) ASP.NET Identity: usuarios, contraseñas hasheadas y roles =====
-builder.Services
-    .AddIdentityCore<ApplicationUser>(options =>
-    {
-        options.Password.RequiredLength = 6;              // reglas de contraseña más simples
-        options.Password.RequireDigit = false;
-        options.Password.RequireLowercase = false;
-        options.Password.RequireUppercase = false;
-        options.Password.RequireNonAlphanumeric = false;
-        options.User.RequireUniqueEmail = true;           // no puede haber dos usuarios con el mismo email
-    })
-    .AddRoles<IdentityRole>()                             // habilita los roles (Admin, Socio)
-    .AddEntityFrameworkStores<AppDbContext>();            // Identity guarda todo con nuestro DbContext
-
-// ===== 3) Inyección de dependencias =====
-// AddScoped: se crea una instancia nueva por cada pedido HTTP.
-// "Cuando alguien pida la interfaz, entregale esta clase."
+// ===== 2) Inyección de dependencias =====
 builder.Services.AddScoped<ILibroRepository, LibroRepository>();
 builder.Services.AddScoped<IPrestamoRepository, PrestamoRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -40,11 +23,16 @@ builder.Services.AddScoped<IPrestamoService, PrestamoService>();
 
 builder.Services.AddControllers();
 
-// ===== 4) Swagger (documentación) con botón "Authorize" para pegar el token =====
+// ===== 3) Swagger con autenticación Bearer =====
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Biblioteca API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Biblioteca API",
+        Version = "v1"
+    });
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -61,15 +49,20 @@ builder.Services.AddSwaggerGen(c =>
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
             },
             Array.Empty<string>()
         }
     });
 });
 
-// ===== 5) Autenticación con JWT: cómo validar el token que llega en "Authorization: Bearer ..." =====
+// ===== 4) Autenticación con JWT =====
 var jwt = builder.Configuration.GetSection("Jwt");
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -78,17 +71,19 @@ builder.Services
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateLifetime = true,                      // rechaza tokens vencidos
-            ValidateIssuerSigningKey = true,              // verifica la firma con la clave secreta
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
             ValidIssuer = jwt["Issuer"],
             ValidAudience = jwt["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!))
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwt["Key"]!)
+            )
         };
     });
 
 builder.Services.AddAuthorization();
 
-// ===== 6) CORS: permite que el front (puerto 5173) llame a esta API (puerto 5080) =====
+// ===== 5) CORS: permite que el frontend llame a la API =====
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
@@ -99,18 +94,21 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Al arrancar: migraciones + roles + datos de ejemplo
+// ===== 6) Inicialización de la base de datos =====
 using (var scope = app.Services.CreateScope())
 {
     await DbInicial.CrearAsync(scope.ServiceProvider);
 }
 
-// ===== Pipeline (el ORDEN importa) =====
+// ===== 7) Pipeline HTTP =====
 app.UseSwagger();
 app.UseSwaggerUI();
+
 app.UseCors("Frontend");
-app.UseAuthentication();      // ¿quién sos? (lee el token)
-app.UseAuthorization();       // ¿tenés permiso? ([Authorize] y roles)
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();
