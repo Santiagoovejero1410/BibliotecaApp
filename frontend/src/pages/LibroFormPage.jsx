@@ -64,7 +64,7 @@ export default function LibroFormPage() {
 
   return (
     <main className="contenido">
-      <h2>{editando ? "Editar libro" : "Nuevo libro"}</h2>
+      <div className="page-heading"><div><div className="eyebrow">Administración del catálogo</div><h1>{editando ? "Editar libro" : "Agregar un libro"}</h1><p>Completá la información del título.</p></div></div>
 
       <form className="card form-card" onSubmit={handleSubmit} noValidate>
         {errorApi && <p className="alerta">{errorApi}</p>}

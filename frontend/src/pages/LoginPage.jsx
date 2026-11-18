@@ -47,10 +47,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-page">
-      <form className="card auth-card" onSubmit={handleSubmit} noValidate>
-        <h1>📚 Biblioteca</h1>
-        <p className="muted">Iniciá sesión</p>
+    <div className="auth-page"><div className="auth-layout"><aside className="auth-art"><div><div className="auth-symbol">▤</div><div className="eyebrow">Biblioteca</div><h2>Tu próxima historia<br />empieza acá.</h2><p>Ingresá a tu cuenta para descubrir libros, gestionar tus préstamos y seguir leyendo.</p></div><div className="small">LEER · DESCUBRIR · COMPARTIR</div></aside>
+      <form className="auth-card" onSubmit={handleSubmit} noValidate>
+        <h1>Bienvenido de nuevo</h1>
+        <p className="muted">Ingresá tus datos para continuar.</p>
 
         {errorApi && <p className="alerta">{errorApi}</p>}
 
@@ -68,7 +68,7 @@ export default function LoginPage() {
 
         <p className="muted">¿No tenés cuenta? <Link to="/register">Registrate</Link></p>
         <p className="muted small">Demo: admin@biblioteca.com / Admin123! — socio@biblioteca.com / Socio123!</p>
-      </form>
+      </form></div>
     </div>
   );
 }

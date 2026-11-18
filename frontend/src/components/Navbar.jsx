@@ -1,7 +1,7 @@
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
-// Barra de navegación. Si no hay usuario logueado, no se muestra.
+// Barra de navegación visible cuando hay una sesión iniciada.
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -15,15 +15,21 @@ export default function Navbar() {
 
   return (
     <header className="navbar">
-      <strong className="logo">📚 Biblioteca</strong>
+      <div className="logo">
+        <span className="logo-mark">▤</span>
+        <span>Biblioteca<small>Leer · descubrir · compartir</small></span>
+      </div>
 
       <nav className="nav-links">
-        <Link to="/">Libros</Link>
-        <Link to="/prestamos">Préstamos</Link>
+        <NavLink to="/" end>Libros</NavLink>
+        <NavLink to="/prestamos">Préstamos</NavLink>
       </nav>
 
       <div className="nav-user">
-        <span>{user.nombre} ({user.rol})</span>
+        <span className="user-chip">
+          <span className="avatar">{user.nombre?.charAt(0)?.toUpperCase() || "U"}</span>
+          <span>{user.nombre} ({user.rol})</span>
+        </span>
         <button className="btn btn-outline" onClick={salir}>Salir</button>
       </div>
     </header>

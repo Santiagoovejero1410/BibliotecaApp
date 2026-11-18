@@ -41,39 +41,43 @@ export default function PrestamosPage() {
 
   return (
     <main className="contenido">
-      <h2>{isAdmin ? "Todos los préstamos" : "Mis préstamos"}</h2>
+      <div className="page-heading">
+        <div>
+          <div className="eyebrow">Seguimiento de lecturas</div>
+          <h1>{isAdmin ? "Todos los préstamos" : "Mis préstamos"}</h1>
+          <p>{isAdmin ? "Consultá los préstamos registrados en la biblioteca." : "Revisá tus libros y fechas de devolución."}</p>
+        </div>
+      </div>
 
       {error && <p className="alerta">{error}</p>}
       {cargando && <p className="muted">Cargando préstamos...</p>}
-      {!cargando && prestamos.length === 0 && !error && <p className="muted">No hay préstamos todavía.</p>}
+      {!cargando && prestamos.length === 0 && !error && <div className="panel empty-state"><span>▤</span>Todavía no hay préstamos para mostrar.</div>}
 
       {prestamos.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>Libro</th>
-              {isAdmin && <th>Socio</th>}
-              <th>Fecha de préstamo</th>
-              <th>Devolución</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {prestamos.map((p) => (
-              <tr key={p.id}>
-                <td>{p.libroTitulo}</td>
-                {isAdmin && <td>{p.usuarioNombre}</td>}
-                <td>{formatear(p.fechaPrestamo)}</td>
-                <td>{p.devuelto ? formatear(p.fechaDevolucion) : <span className="badge rojo">Pendiente</span>}</td>
-                <td>
-                  {!p.devuelto && (
-                    <button className="btn btn-primary" onClick={() => devolver(p)}>Devolver</button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <section className="panel">
+          <div className="table-scroll">
+            <table>
+              <thead><tr>
+                <th>Libro</th>
+                {isAdmin && <th>Socio</th>}
+                <th>Fecha de préstamo</th>
+                <th>Devolución</th>
+                <th>Acciones</th>
+              </tr></thead>
+              <tbody>
+                {prestamos.map((p) => (
+                  <tr key={p.id}>
+                    <td><strong>{p.libroTitulo}</strong></td>
+                    {isAdmin && <td>{p.usuarioNombre}</td>}
+                    <td>{formatear(p.fechaPrestamo)}</td>
+                    <td>{p.devuelto ? formatear(p.fechaDevolucion) : <span className="badge rojo">● Pendiente</span>}</td>
+                    <td>{!p.devuelto && <button className="btn btn-primary" onClick={() => devolver(p)}>Marcar devuelto</button>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
     </main>
   );

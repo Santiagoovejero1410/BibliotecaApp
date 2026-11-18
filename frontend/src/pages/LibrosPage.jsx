@@ -66,68 +66,61 @@ export default function LibrosPage() {
 
   return (
     <main className="contenido">
-      <div className="page-header">
-        <h2>Libros</h2>
-        {/* Este botón solo se muestra si el usuario es Admin */}
-        {isAdmin && <Link to="/libros/nuevo" className="btn btn-primary">+ Nuevo libro</Link>}
+      <div className="page-heading">
+        <div>
+          <div className="eyebrow">Explorá nuestra colección</div>
+          <h1>Catálogo de libros</h1>
+          <p>Encontrá tu próxima lectura entre nuestros títulos.</p>
+        </div>
+        {isAdmin && <Link to="/libros/nuevo" className="btn btn-primary">＋ Agregar libro</Link>}
       </div>
 
-      <form className="buscador" onSubmit={handleBuscar}>
-        <input placeholder="Buscar por título o autor..." value={texto} onChange={(e) => setTexto(e.target.value)} />
-        <button className="btn btn-outline">Buscar</button>
-      </form>
+      <div className="toolbar">
+        <form className="buscador" onSubmit={handleBuscar}>
+          <div className="search-wrap"><span className="search-symbol">⌕</span>
+            <input aria-label="Buscar libros" placeholder="Buscar por título o autor..." value={texto} onChange={(e) => setTexto(e.target.value)} />
+          </div>
+          <button className="btn btn-outline">Buscar</button>
+        </form>
+        <span className="muted small">{data.total ?? data.items.length} títulos en el catálogo</span>
+      </div>
 
       {mensaje && <p className="ok">{mensaje}</p>}
       {error && <p className="alerta">{error}</p>}
       {cargando && <p className="muted">Cargando libros...</p>}
-
-      {!cargando && data.items.length === 0 && !error && <p className="muted">No se encontraron libros.</p>}
+      {!cargando && data.items.length === 0 && !error && <div className="panel empty-state"><span>⌕</span>No se encontraron libros. Probá con otra búsqueda.</div>}
 
       {data.items.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>Título</th>
-              <th>Autor</th>
-              <th>Género</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* key: React necesita un identificador único por cada elemento de la lista */}
-            {data.items.map((libro) => (
-              <tr key={libro.id}>
-                <td>{libro.titulo}</td>
-                <td>{libro.autor}</td>
-                <td>{libro.genero}</td>
-                <td>
-                  <span className={libro.disponible ? "badge verde" : "badge rojo"}>
-                    {libro.disponible ? "Disponible" : "Prestado"}
-                  </span>
-                </td>
-                <td className="acciones">
+        <section className="catalog-grid">
+          {data.items.map((libro) => (
+            <article className="book-card" key={libro.id}>
+              <div className="book-cover" aria-hidden="true">▤</div>
+              <div className="book-info">
+                <div className="book-genre">{libro.genero || "Lectura"}</div>
+                <h3>{libro.titulo}</h3>
+                <div className="book-author">por {libro.autor}</div>
+                <span className={libro.disponible ? "badge verde" : "badge rojo"}>
+                  {libro.disponible ? "● Disponible" : "● Prestado"}
+                </span>
+                <div className="book-actions">
                   <button className="btn btn-primary" disabled={!libro.disponible} onClick={() => pedirPrestado(libro)}>
                     Pedir prestado
                   </button>
-                  {isAdmin && (
-                    <>
-                      <Link to={`/libros/${libro.id}/editar`} className="btn btn-outline">Editar</Link>
-                      <button className="btn btn-danger" onClick={() => eliminar(libro)}>Eliminar</button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  {isAdmin && <>
+                    <Link to={`/libros/${libro.id}/editar`} className="btn btn-outline">Editar</Link>
+                    <button className="btn btn-danger" onClick={() => eliminar(libro)}>Eliminar</button>
+                  </>}
+                </div>
+              </div>
+            </article>
+          ))}
+        </section>
       )}
 
-      {/* Paginación */}
       <div className="paginacion">
-        <button className="btn btn-outline" disabled={pagina <= 1} onClick={() => setPagina(pagina - 1)}>Anterior</button>
+        <button className="btn btn-outline" disabled={pagina <= 1} onClick={() => setPagina(pagina - 1)}>← Anterior</button>
         <span>Página {data.pagina} de {data.totalPaginas}</span>
-        <button className="btn btn-outline" disabled={pagina >= data.totalPaginas} onClick={() => setPagina(pagina + 1)}>Siguiente</button>
+        <button className="btn btn-outline" disabled={pagina >= data.totalPaginas} onClick={() => setPagina(pagina + 1)}>Siguiente →</button>
       </div>
     </main>
   );

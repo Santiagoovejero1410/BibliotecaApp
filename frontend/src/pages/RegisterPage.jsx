@@ -46,9 +46,9 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="auth-page">
-      <form className="card auth-card" onSubmit={handleSubmit} noValidate>
-        <h1>Crear cuenta</h1>
+    <div className="auth-page"><div className="auth-layout"><aside className="auth-art"><div><div className="auth-symbol">▤</div><div className="eyebrow">Biblioteca</div><h2>Un mundo de<br />historias te espera.</h2><p>Sumate a nuestra comunidad y empezá a explorar el catálogo de la biblioteca.</p></div><div className="small">LEER · DESCUBRIR · COMPARTIR</div></aside>
+      <form className="auth-card" onSubmit={handleSubmit} noValidate>
+        <h1>Crear una cuenta</h1><p className="muted">Completá tus datos para registrarte.</p>
 
         {errorApi && <p className="alerta">{errorApi}</p>}
 
@@ -72,7 +72,7 @@ export default function RegisterPage() {
           {cargando ? "Creando..." : "Registrarme"}
         </button>
         <p className="muted">¿Ya tenés cuenta? <Link to="/login">Iniciá sesión</Link></p>
-      </form>
+      </form></div>
     </div>
   );
 }
