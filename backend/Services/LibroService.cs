@@ -7,11 +7,10 @@ namespace BibliotecaApi.Services;
 public class LibroService : ILibroService
 {
     private readonly ILibroRepository _repo;
-    public LibroService(ILibroRepository repo) => _repo = repo;    // DI por constructor
+    public LibroService(ILibroRepository repo) => _repo = repo;    
 
     public async Task<PagedResultDto<LibroResponseDto>> ListarAsync(int pagina, int tamanio, string? buscar)
     {
-        // Regla de negocio: valores razonables para la paginación
         if (pagina < 1) pagina = 1;
         if (tamanio < 1 || tamanio > 50) tamanio = 5;
 
@@ -19,7 +18,7 @@ public class LibroService : ILibroService
 
         return new PagedResultDto<LibroResponseDto>
         {
-            Items = libros.Select(ToDto).ToList(),                 // Entidad -> DTO
+            Items = libros.Select(ToDto).ToList(),                 
             Total = total,
             Pagina = pagina,
             TotalPaginas = Math.Max(1, (int)Math.Ceiling(total / (double)tamanio))
@@ -29,7 +28,7 @@ public class LibroService : ILibroService
     public async Task<LibroResponseDto?> ObtenerAsync(int id)
     {
         var libro = await _repo.GetByIdAsync(id);
-        return libro == null ? null : ToDto(libro);                // null = no existe (el controller responde 404)
+        return libro == null ? null : ToDto(libro);                
     }
 
     public async Task<LibroResponseDto> CrearAsync(LibroDto dto)
@@ -61,7 +60,6 @@ public class LibroService : ILibroService
         var libro = await _repo.GetByIdAsync(id);
         if (libro == null) return false;
 
-        // Regla de negocio: no se puede borrar un libro que ya tuvo préstamos
         if (await _repo.TienePrestamosAsync(id))
             throw new InvalidOperationException("No se puede eliminar: el libro tiene préstamos registrados.");
 

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import api, { getError } from "../api/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
-// Lista de préstamos: el socio ve los suyos, el admin ve todos (lo decide el backend según el token).
 export default function PrestamosPage() {
   const { isAdmin } = useAuth();
 

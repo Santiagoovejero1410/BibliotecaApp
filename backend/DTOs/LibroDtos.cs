@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BibliotecaApi.DTOs;
 
-// DTO de ENTRADA (crear y editar un libro)
 public class LibroDto
 {
     [Required(ErrorMessage = "El título es obligatorio")]
@@ -17,7 +16,6 @@ public class LibroDto
     public string Genero { get; set; } = string.Empty;
 }
 
-// DTO de SALIDA
 public class LibroResponseDto
 {
     public int Id { get; set; }
@@ -27,7 +25,6 @@ public class LibroResponseDto
     public bool Disponible { get; set; }
 }
 
-// Respuesta paginada: la lista de la página actual + datos para armar los botones de paginación
 public class PagedResultDto<T>
 {
     public List<T> Items { get; set; } = new();

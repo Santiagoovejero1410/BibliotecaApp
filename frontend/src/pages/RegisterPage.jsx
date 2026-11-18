@@ -35,7 +35,6 @@ export default function RegisterPage() {
     setCargando(true);
     setErrorApi("");
     try {
-      // El backend crea el usuario con rol Socio y devuelve el token: queda logueado
       await register(form.nombre, form.email, form.password);
       navigate("/");
     } catch (err) {

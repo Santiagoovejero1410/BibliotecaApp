@@ -14,16 +14,16 @@ public class PrestamosController : ControllerBase
     private readonly IPrestamoService _prestamos;
     public PrestamosController(IPrestamoService prestamos) => _prestamos = prestamos;
 
-    // Datos del usuario logueado, sacados de los claims del token JWT
+    
     private string UsuarioId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
     private bool EsAdmin => User.IsInRole("Admin");
 
-    // GET api/prestamos -> el socio ve los suyos, el admin ve todos
+
     [HttpGet]
     public async Task<IActionResult> Get() =>
         Ok(await _prestamos.ListarAsync(UsuarioId, EsAdmin));
 
-    // POST api/prestamos  { "libroId": 3 }
+    
     [HttpPost]
     public async Task<IActionResult> Post(PrestamoCreateDto dto)
     {
@@ -34,15 +34,15 @@ public class PrestamosController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { mensaje = ex.Message });         // 404
+            return NotFound(new { mensaje = ex.Message });         
         }
-        catch (InvalidOperationException ex)                       // libro no disponible, límite de préstamos
+        catch (InvalidOperationException ex)                       
         {
-            return BadRequest(new { mensaje = ex.Message });       // 400
+            return BadRequest(new { mensaje = ex.Message });       
         }
     }
 
-    // PUT api/prestamos/5/devolver
+    
     [HttpPut("{id}/devolver")]
     public async Task<IActionResult> Devolver(int id)
     {
@@ -56,7 +56,7 @@ public class PrestamosController : ControllerBase
         }
         catch (UnauthorizedAccessException ex)
         {
-            return StatusCode(403, new { mensaje = ex.Message });  // 403: no tenés permiso
+            return StatusCode(403, new { mensaje = ex.Message });  
         }
         catch (InvalidOperationException ex)
         {

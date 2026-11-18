@@ -7,7 +7,6 @@ import LibrosPage from "./pages/LibrosPage.jsx";
 import LibroFormPage from "./pages/LibroFormPage.jsx";
 import PrestamosPage from "./pages/PrestamosPage.jsx";
 
-// Define todas las rutas de la aplicación (React Router).
 export default function App() {
   return (
     <>

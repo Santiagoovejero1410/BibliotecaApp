@@ -2,8 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BibliotecaApi.DTOs;
 
-// DTO = objeto que viaja entre el front y el back. Los atributos [Required], [EmailAddress], etc.
-// validan los datos automáticamente (por el [ApiController] de los controllers).
 public class RegisterDto
 {
     [Required(ErrorMessage = "El nombre es obligatorio")]
@@ -29,7 +27,6 @@ public class LoginDto
     public string Password { get; set; } = string.Empty;
 }
 
-// Lo que devuelve el login: el token JWT y datos del usuario
 public class AuthResponseDto
 {
     public string Token { get; set; } = string.Empty;

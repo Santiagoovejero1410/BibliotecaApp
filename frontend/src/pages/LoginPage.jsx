@@ -7,19 +7,16 @@ export default function LoginPage() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
 
-  // useState: guarda lo que se escribe, los errores y si se está enviando
   const [form, setForm] = useState({ email: "", password: "" });
-  const [errores, setErrores] = useState({});     // errores de validación por campo
-  const [errorApi, setErrorApi] = useState("");   // error que devuelve el backend
+  const [errores, setErrores] = useState({});     
+  const [errorApi, setErrorApi] = useState("");   
   const [cargando, setCargando] = useState(false);
 
-  // Si ya hay sesión, no tiene sentido ver el login
+
   if (user) return <Navigate to="/" replace />;
 
-  // Un solo handler para todos los inputs: usa el "name" del input para saber qué campo actualizar
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  // Validación: devuelve un objeto { campo: "mensaje de error" }
   const validar = () => {
     const e = {};
     if (!form.email.trim()) e.email = "El email es obligatorio";
@@ -29,10 +26,10 @@ export default function LoginPage() {
   };
 
   const handleSubmit = async (ev) => {
-    ev.preventDefault();                          // evita que el navegador recargue la página
+    ev.preventDefault();                      
     const e = validar();
     setErrores(e);
-    if (Object.keys(e).length > 0) return;        // si hay errores, no llamamos a la API
+    if (Object.keys(e).length > 0) return;        
 
     setCargando(true);
     setErrorApi("");

@@ -4,17 +4,13 @@ using BibliotecaApi.Services;
 
 namespace BibliotecaApi.Controllers;
 
-// CONTROLLER: recibe el pedido HTTP y se lo pasa al Service. No tiene reglas de negocio.
-// [ApiController] valida los DTO automáticamente (si no cumplen, responde 400 solo).
-// Este controller NO tiene [Authorize]: registrarse y loguearse tiene que ser público.
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _auth;
-    public AuthController(IAuthService auth) => _auth = auth;      // DI por constructor (interfaz)
+    public AuthController(IAuthService auth) => _auth = auth;      
 
-    // POST api/auth/register
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
@@ -22,20 +18,19 @@ public class AuthController : ControllerBase
         {
             return Ok(await _auth.RegisterAsync(dto));
         }
-        catch (InvalidOperationException ex)                       // ej: el email ya existe
+        catch (InvalidOperationException ex)                      
         {
-            return BadRequest(new { mensaje = ex.Message });       // 400
+            return BadRequest(new { mensaje = ex.Message });     
         }
     }
 
-    // POST api/auth/login -> devuelve el JWT
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
         var respuesta = await _auth.LoginAsync(dto);
         if (respuesta == null)
-            return Unauthorized(new { mensaje = "Email o contraseña incorrectos." });   // 401
+            return Unauthorized(new { mensaje = "Email o contraseña incorrectos." });   
 
-        return Ok(respuesta);                                      // 200
+        return Ok(respuesta);                                      
     }
 }

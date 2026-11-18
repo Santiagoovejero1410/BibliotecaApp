@@ -3,19 +3,17 @@ import { Link } from "react-router-dom";
 import api, { getError } from "../api/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
-// Listado de libros con búsqueda y paginación (los datos vienen del backend).
 export default function LibrosPage() {
   const { isAdmin } = useAuth();
 
   const [data, setData] = useState({ items: [], total: 0, pagina: 1, totalPaginas: 1 });
   const [pagina, setPagina] = useState(1);
-  const [texto, setTexto] = useState("");     // lo que se escribe en el buscador
-  const [buscar, setBuscar] = useState("");   // lo que se envió a buscar
+  const [texto, setTexto] = useState("");   
+  const [buscar, setBuscar] = useState("");   
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
 
-  // Pide los libros a la API
   const cargar = async () => {
     setCargando(true);
     setError("");
@@ -29,14 +27,13 @@ export default function LibrosPage() {
     }
   };
 
-  // useEffect: se ejecuta al abrir la página y cada vez que cambia la página o la búsqueda
   useEffect(() => {
     cargar();
   }, [pagina, buscar]);
 
   const handleBuscar = (e) => {
     e.preventDefault();
-    setPagina(1);          // al buscar, volvemos a la primera página
+    setPagina(1);          
     setBuscar(texto);
   };
 

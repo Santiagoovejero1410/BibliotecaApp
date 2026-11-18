@@ -11,14 +11,12 @@ public class PrestamoService : IPrestamoService
     private readonly IPrestamoRepository _prestamos;
     private readonly ILibroRepository _libros;
 
-    // Este service usa DOS repositorios, los dos inyectados por constructor
     public PrestamoService(IPrestamoRepository prestamos, ILibroRepository libros)
     {
         _prestamos = prestamos;
         _libros = libros;
     }
 
-    // El admin ve todos los préstamos; el socio solo los suyos
     public async Task<List<PrestamoResponseDto>> ListarAsync(string usuarioId, bool esAdmin)
     {
         var lista = await _prestamos.GetAllAsync(esAdmin ? null : usuarioId);
@@ -30,7 +28,6 @@ public class PrestamoService : IPrestamoService
         var libro = await _libros.GetByIdAsync(libroId)
             ?? throw new KeyNotFoundException("El libro no existe.");
 
-        // Reglas de negocio
         if (!libro.Disponible)
             throw new InvalidOperationException("El libro no está disponible, ya está prestado.");
 
@@ -40,15 +37,14 @@ public class PrestamoService : IPrestamoService
         var prestamo = new Prestamo
         {
             LibroId = libro.Id,
-            UsuarioId = usuarioId,                // sale del TOKEN, no de lo que mande el front
+            UsuarioId = usuarioId,                
             FechaPrestamo = DateTime.Now
         };
-        libro.Disponible = false;                 // el libro pasa a estar prestado
+        libro.Disponible = false;                 
 
-        // Un solo SaveChanges guarda el préstamo nuevo y el cambio del libro juntos
         await _prestamos.AddAsync(prestamo);
 
-        var creado = await _prestamos.GetByIdAsync(prestamo.Id);   // lo pedimos de nuevo para traer Libro y Usuario
+        var creado = await _prestamos.GetByIdAsync(prestamo.Id);  
         return ToDto(creado!);
     }
 
@@ -57,7 +53,6 @@ public class PrestamoService : IPrestamoService
         var prestamo = await _prestamos.GetByIdAsync(prestamoId)
             ?? throw new KeyNotFoundException("El préstamo no existe.");
 
-        // Un socio solo puede devolver sus propios préstamos
         if (!esAdmin && prestamo.UsuarioId != usuarioId)
             throw new UnauthorizedAccessException("No podés devolver el préstamo de otra persona.");
 
@@ -65,7 +60,7 @@ public class PrestamoService : IPrestamoService
             throw new InvalidOperationException("Este libro ya fue devuelto.");
 
         prestamo.FechaDevolucion = DateTime.Now;
-        prestamo.Libro.Disponible = true;         // el libro vuelve a estar disponible
+        prestamo.Libro.Disponible = true;         
 
         await _prestamos.UpdateAsync(prestamo);
         return ToDto(prestamo);

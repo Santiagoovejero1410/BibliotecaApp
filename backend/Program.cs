@@ -10,11 +10,9 @@ using BibliotecaApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ===== 1) Base de datos: EF Core con SQL Server =====
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ===== 2) Inyección de dependencias =====
 builder.Services.AddScoped<ILibroRepository, LibroRepository>();
 builder.Services.AddScoped<IPrestamoRepository, PrestamoRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -23,7 +21,6 @@ builder.Services.AddScoped<IPrestamoService, PrestamoService>();
 
 builder.Services.AddControllers();
 
-// ===== 3) Swagger con autenticación Bearer =====
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
@@ -60,7 +57,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// ===== 4) Autenticación con JWT =====
 var jwt = builder.Configuration.GetSection("Jwt");
 
 builder.Services
@@ -83,7 +79,6 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// ===== 5) CORS: permite que el frontend llame a la API =====
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
@@ -94,13 +89,11 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// ===== 6) Inicialización de la base de datos =====
 using (var scope = app.Services.CreateScope())
 {
     await DbInicial.CrearAsync(scope.ServiceProvider);
 }
 
-// ===== 7) Pipeline HTTP =====
 app.UseSwagger();
 app.UseSwaggerUI();
 

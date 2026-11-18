@@ -4,25 +4,21 @@ using BibliotecaApi.Models;
 
 namespace BibliotecaApi.Repositories;
 
-// REPOSITORY: la ÚNICA capa que habla con la base de datos (con EF Core y LINQ). No tiene reglas de negocio.
 public class LibroRepository : ILibroRepository
 {
     private readonly AppDbContext _db;
 
-    // Inyección de dependencias por constructor: ASP.NET nos entrega el DbContext
     public LibroRepository(AppDbContext db) => _db = db;
 
     public async Task<(List<Libro> Items, int Total)> GetPaginadoAsync(string? buscar, int pagina, int tamanio)
     {
         var query = _db.Libros.AsQueryable();
 
-        // LINQ: filtro opcional por título o autor
         if (!string.IsNullOrWhiteSpace(buscar))
             query = query.Where(l => l.Titulo.Contains(buscar) || l.Autor.Contains(buscar));
 
-        var total = await query.CountAsync();             // cuántos libros hay en total (para saber cuántas páginas)
+        var total = await query.CountAsync();           
 
-        // PAGINACIÓN: Skip saltea los de las páginas anteriores, Take toma solo los de esta página
         var items = await query
             .OrderBy(l => l.Titulo)
             .Skip((pagina - 1) * tamanio)

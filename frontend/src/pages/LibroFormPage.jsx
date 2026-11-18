@@ -2,20 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api, { getError } from "../api/api.js";
 
-// Formulario para crear o editar un libro (solo Admin).
-// Si la URL trae un :id (/libros/3/editar) estamos EDITANDO; si no, estamos CREANDO.
 export default function LibroFormPage() {
-  const { id } = useParams();            // lee el :id de la URL
+  const { id } = useParams();            
   const navigate = useNavigate();
   const editando = Boolean(id);
 
   const [form, setForm] = useState({ titulo: "", autor: "", genero: "" });
   const [errores, setErrores] = useState({});
   const [errorApi, setErrorApi] = useState("");
-  const [cargando, setCargando] = useState(editando);   // si editamos, primero hay que cargar el libro
+  const [cargando, setCargando] = useState(editando);   
   const [guardando, setGuardando] = useState(false);
 
-  // Si estamos editando, traemos los datos del libro para completar el formulario
+
   useEffect(() => {
     if (!editando) return;
     const cargar = async () => {
@@ -50,8 +48,8 @@ export default function LibroFormPage() {
     setGuardando(true);
     setErrorApi("");
     try {
-      if (editando) await api.put(`/libros/${id}`, form);   // PUT = actualizar
-      else await api.post("/libros", form);                  // POST = crear
+      if (editando) await api.put(`/libros/${id}`, form);   
+      else await api.post("/libros", form);                  
       navigate("/");
     } catch (err) {
       setErrorApi(getError(err));
